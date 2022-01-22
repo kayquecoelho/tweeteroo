@@ -16,29 +16,47 @@ app.post("/sign-up", (req, res) => {
 
   if (signUpUser.username === "" || !validateURL.test(signUpUser.avatar)) {
     res.status(400).send("Todos os campos são obrigatórios");
-  } else {
-    users.push(signUpUser);
-    res.status(201).send(users);
+    return;
   }
+  users.push(signUpUser);
+  res.status(201).send(users);
 });
 
 app.post("/tweets", (req, res) => {
+  const username = req.get("User");
+
   const tweet = req.body;
 
-  const currentUser = users.find((user) => tweet.username === user.username);
+  const currentUser = users.find((user) => username === user.username);
 
   tweet.avatar = currentUser.avatar;
+  tweet.username = username;
 
-  if (tweets.length === 10) {
-    tweets.shift();
-  }
   tweets.push(tweet);
 
-  res.send("OK!");
+  res.status(201).send("OK!");
 });
 
 app.get("/tweets", (req, res) => {
+  const page = parseInt(req.query.page);
+
+  if (page < 1) {
+    res.status(400).send("Informe uma página válida");
+    return;
+  }
+  const sectionOfTweets = [];
+  for (let i = page - 1 * 10; i < page * 10; i++) {
+    sectionOfTweets.push(tweets[i]);
+  }
   res.send(tweets);
+});
+
+app.get("/tweets/:username", (req, res) => {
+  const username = req.params.username;
+
+  const mytweets = tweets.filter((tweet) => username === tweet.username);
+
+  res.send(mytweets);
 });
 
 app.listen(5000);
