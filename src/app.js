@@ -3,7 +3,7 @@ import cors from "cors";
 
 const users = [];
 
-const tweets = [];
+let tweets = [];
 
 const app = express();
 app.use(cors());
@@ -32,23 +32,27 @@ app.post("/tweets", (req, res) => {
   tweet.avatar = currentUser.avatar;
   tweet.username = username;
 
-  tweets.push(tweet);
+  tweets.splice(0, 0, tweet);
 
   res.status(201).send("OK!");
 });
 
 app.get("/tweets", (req, res) => {
   const page = parseInt(req.query.page);
-
   if (page < 1) {
     res.status(400).send("Informe uma página válida");
     return;
   }
-  const sectionOfTweets = [];
-  for (let i = page - 1 * 10; i < page * 10; i++) {
-    sectionOfTweets.push(tweets[i]);
+  const minTweetIndex = (page - 1) * 10;
+  let maxAmountOfTweets = page * 10;
+
+  if (maxAmountOfTweets > tweets.length) {
+    maxAmountOfTweets = tweets.length;
   }
-  res.send(tweets);
+
+  const sectionOfTweets = tweets.slice(minTweetIndex, maxAmountOfTweets);
+
+  res.send(sectionOfTweets);
 });
 
 app.get("/tweets/:username", (req, res) => {
