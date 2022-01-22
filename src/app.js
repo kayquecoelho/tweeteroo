@@ -6,8 +6,9 @@ const users = [];
 let tweets = [];
 
 const app = express();
-app.use(cors());
+
 app.use(express.json());
+app.use(cors());
 
 app.post("/sign-up", (req, res) => {
   const signUpUser = req.body;
@@ -15,17 +16,31 @@ app.post("/sign-up", (req, res) => {
     /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/;
 
   if (signUpUser.username === "" || !validateURL.test(signUpUser.avatar)) {
-    res.status(400).send("Todos os campos são obrigatórios");
+    res.status(400).send("Todos os campos são obrigatórios!");
     return;
   }
+
+  const isRegistraded = users.find(
+    (user) => signUpUser.username === user.username
+  );
+
+  if (isRegistraded) {
+    res.status(400).send("O usuário já está cadastrado!");
+    return;
+  }
+
   users.push(signUpUser);
   res.status(201).send(users);
 });
 
 app.post("/tweets", (req, res) => {
   const username = req.get("User");
-
   const tweet = req.body;
+
+  if (username === "" || tweet.tweet === "") {
+    res.status(400).send("Todos os campos são obrigatórios!");
+    return;
+  }
 
   const currentUser = users.find((user) => username === user.username);
 
@@ -63,4 +78,6 @@ app.get("/tweets/:username", (req, res) => {
   res.send(mytweets);
 });
 
-app.listen(5000);
+app.listen(5000, () => {
+  console.log("Server is listening on port 5000");
+});
