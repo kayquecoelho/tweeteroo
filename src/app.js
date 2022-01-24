@@ -1,4 +1,4 @@
-import express, { response } from "express";
+import express from "express";
 import cors from "cors";
 
 const users = [];
@@ -24,13 +24,11 @@ app.post("/sign-up", (req, res) => {
     (user) => signUpUser.username === user.username
   );
 
-  if (isRegistraded) {
-    res.status(400).send("O usuário já está cadastrado!");
-    return;
+  if (!isRegistraded) {
+    users.push(signUpUser);
   }
 
-  users.push(signUpUser);
-  res.status(201).send(users);
+  res.status(201).send("OK!");
 });
 
 app.post("/tweets", (req, res) => {
@@ -47,17 +45,19 @@ app.post("/tweets", (req, res) => {
   tweet.avatar = currentUser.avatar;
   tweet.username = username;
 
-  tweets.splice(0, 0, tweet);
+  tweets = [tweet, ...tweets];
 
   res.status(201).send("OK!");
 });
 
 app.get("/tweets", (req, res) => {
   const page = parseInt(req.query.page);
+
   if (page < 1) {
     res.status(400).send("Informe uma página válida");
     return;
   }
+
   const minTweetIndex = (page - 1) * 10;
   let maxAmountOfTweets = page * 10;
 
